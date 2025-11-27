@@ -1,238 +1,311 @@
-# 📚 HỆ THỐNG SIÊU ĐƠN GIẢN: GIẢNG VIÊN - SINH VIÊN
+# EduShare - Hệ Thống Chia Sẻ Tài Liệu Giáo Dục
 
-## 🎯 MỤC ĐÍCH
+## Giới Thiệu
 
-Hệ thống **CỰC KỲ ĐƠN GIẢN** cho phép:
-- ✅ **Giảng viên** upload tài liệu
-- ✅ **Sinh viên** tải tài liệu **KHÔNG GIỚI HẠN**
+EduShare là nền tảng đơn giản cho phép giảng viên upload và chia sẻ tài liệu học tập với sinh viên.
 
-Không có gì phức tạp. Chỉ vậy thôi!
-
----
-
-## 📊 DATABASE (6 BẢNG DUY NHẤT)
-
-```
-1. profiles          - Users (teacher/student/admin)
-2. subjects          - Môn học
-3. subject_teachers  - Giảng viên dạy môn nào
-4. subject_students  - Sinh viên đăng ký môn nào
-5. documents         - Tài liệu
-6. downloads         - Log tải tài liệu
-```
-
-**Không có:**
-- ❌ Likes, Comments, Chat
-- ❌ AI features
-- ❌ Premium, Points, Earnings
-- ❌ Views count, Ratings
-- ❌ Universities, Instructors (riêng biệt)
+**Tính năng chính:**
+- ✅ Giảng viên upload tài liệu (PDF, DOC, PPT, video, audio, etc.)
+- ✅ Sinh viên tải tài liệu không giới hạn
+- ✅ Preview tài liệu trực tiếp (PDF, Office, video, audio)
+- ✅ Duplicate check tự động (cùng tiêu đề)
+- ✅ Delete tài liệu (chỉ chủ sở hữu)
 
 ---
 
-## 🚀 CÀI ĐẶT (3 BƯỚC)
+## Database Structure
 
-### 1. Setup Database
+```
+1. users      - Người dùng (teacher/student/admin)
+2. documents  - Tài liệu
+3. downloads  - Tracking lượt tải
+```
+
+**Simple & Clean!**
+
+---
+
+## 🚀 Cài Đặt
+
+### 1. Cài đặt Database
 
 ```bash
-# Chạy trong MySQL
-mysql -u root -p < server/database/schema-simple.sql
-mysql -u root -p < server/database/sample-data-ultra-simple.sql
+mysql -u root -p < server/database/schema.sql
+mysql -u root -p < server/database/sample-data.sql
 ```
 
-### 2. Config Backend
+**Hoặc dùng MySQL Workbench:**
+- Import `schema.sql`
+- Import `sample-data.sql`
+
+### 2. Cấu hình Backend
 
 ```bash
 cd server
 cp .env.example .env
-# Sửa password MySQL trong .env
 ```
 
-File `.env`:
+Chỉnh sửa file `.env`:
 ```env
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=your_password
+DB_PASSWORD=your_mysql_password
 DB_NAME=studocu
 
-JWT_SECRET=any-random-string
+JWT_SECRET=your-secret-key-here
 PORT=3000
+NODE_ENV=development
 ```
 
-### 3. Chạy
+### 3. Chạy Ứng Dụng
 
+**Terminal 1 - Backend:**
 ```bash
-# Terminal 1: Backend
 cd server
 npm install
 npm run dev
+```
 
-# Terminal 2: Frontend
+**Terminal 2 - Frontend:**
+```bash
 npm install
 npm run dev
 ```
 
-**Done!** Mở http://localhost:6868
+**Truy cập:** http://localhost:6868
 
 ---
 
-## 📡 API (Cực đơn giản)
+## 📡 API Documentation
 
-### Auth
+Xem chi tiết tại: [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
+
+**Postman Collection:** Import file `EduShare_Postman_Collection.json`
+
+### Quick Reference
+
+**Authentication:**
 ```
-POST /api/auth/register    # email, password, full_name, role
-POST /api/auth/login       # email, password
+POST /api/auth/register
+POST /api/auth/login
 GET  /api/auth/me
 ```
 
-### Documents
+**Documents:**
 ```
-GET    /api/documents           # List (student chỉ thấy môn đã đăng ký)
-POST   /api/documents           # Upload (teacher only)
-PUT    /api/documents/:id       # Update (owner only)
-DELETE /api/documents/:id       # Delete (owner only)
-POST   /api/documents/:id/download  # Tải (KHÔNG GIỚI HẠN)
+GET    /api/documents
+GET    /api/documents/:id
+POST   /api/documents          (teacher only)
+PUT    /api/documents/:id      (owner only)
+DELETE /api/documents/:id      (owner only)
+POST   /api/documents/:id/download
 ```
 
-### Subjects
+**Upload:**
 ```
-GET    /api/subjects                # All
-GET    /api/subjects/my-subjects    # Student's enrolled
-GET    /api/subjects/teaching       # Teacher's teaching
-POST   /api/subjects/:id/enroll     # Enroll (student)
-DELETE /api/subjects/:id/enroll     # Unenroll
+POST /api/uploads/upload       (multipart/form-data)
+GET  /api/uploads/:filename
+```
+
+**Stats:**
+```
+GET /api/stats
 ```
 
 ---
 
-## 🔑 PHÂN QUYỀN ĐƠN GIẢN
+## 🔑 Phân Quyền
 
 ### 👨‍🏫 Teacher (Giảng viên)
-- Upload tài liệu
+- Upload tài liệu (max 100MB, 19 formats)
 - Sửa/Xóa tài liệu của mình
-- Xem thống kê downloads
+- Không thể upload 2 tài liệu cùng tên
 
 ### 👨‍🎓 Student (Sinh viên)
-- Đăng ký môn học
-- Xem tài liệu (chỉ môn đã đăng ký)
-- **Tải KHÔNG GIỚI HẠN**
-
-### 🔧 Admin
-- (Dự phòng cho sau)
+- Xem danh sách tài liệu
+- Tải tài liệu (không giới hạn)
+- Preview tài liệu online
 
 ---
 
-## 💡 FLOW ĐƠN GIẢN
+## 📦 File Formats Hỗ Trợ
 
-```
-1. Sinh viên đăng ký tài khoản (role: student)
-2. Sinh viên đăng ký môn học
-3. Giảng viên upload tài liệu vào môn học
-4. Sinh viên vào môn học → Thấy tài liệu
-5. Sinh viên tải tài liệu (không giới hạn, không cần điểm)
-```
+**Documents:**
+- PDF, DOC, DOCX, PPT, PPTX, TXT
+- XLS, XLSX, CSV
 
-**Không có:**
-- Không cần like/comment
-- Không cần premium
-- Không cần tích điểm
-- Chỉ cần: Upload và Download!
+**Archives:**
+- ZIP, RAR
+
+**Media:**
+- Video: MP4, AVI, MOV, WMV, FLV, MKV
+- Audio: MP3, WAV, AAC, FLAC, OGG, WMA
+
+**Max size:** 100MB
 
 ---
 
-## 🗂️ CẤU TRÚC FILES
+## 🎨 Preview Features
+
+- **PDF:** PDF.js viewer
+- **Office Files:** Microsoft Office Viewer (embeds)
+- **Video:** HTML5 video player
+- **Audio:** HTML5 audio player
+- **TXT:** Auto convert to PDF (PDFKit)
+- **Universal:** PDFTron WebViewer (trial mode)
+
+---
+
+## 🗂️ Project Structure
 
 ```
-server/
-├── database/
-│   ├── schema-simple.sql              ← DATABASE CHÍNH
-│   └── sample-data-ultra-simple.sql   ← DỮ LIỆU MẪU
+├── server/
+│   ├── database/
+│   │   ├── schema.sql
+│   │   └── sample-data.sql
+│   ├── src/
+│   │   ├── routes/
+│   │   │   ├── auth.ts
+│   │   │   ├── documents.ts
+│   │   │   ├── upload.ts
+│   │   │   ├── convert.ts
+│   │   │   └── stats.ts
+│   │   ├── middleware/auth.ts
+│   │   ├── config/database.ts
+│   │   └── index.ts
+│   └── uploads/           (file storage)
 ├── src/
-│   ├── routes/
-│   │   ├── auth-ultra-simple.ts       ← AUTH
-│   │   ├── documents-ultra-simple.ts  ← DOCUMENTS
-│   │   └── subjects-ultra-simple.ts   ← SUBJECTS
-│   ├── middleware/auth.ts
-│   ├── config/database.ts
-│   └── index-ultra-simple.ts          ← SERVER ENTRY
-└── .env.example
+│   ├── pages/
+│   │   ├── Index.tsx      (document list)
+│   │   ├── Document.tsx   (preview page)
+│   │   ├── Upload.tsx     (teacher only)
+│   │   └── Auth.tsx       (login/register)
+│   ├── components/
+│   │   ├── Layout/Header.tsx
+│   │   └── WebViewer/WebViewerComponent.tsx
+│   └── lib/api.ts
+├── public/
+│   └── webviewer/         (PDFTron library)
+├── API_DOCUMENTATION.md
+└── EduShare_Postman_Collection.json
 ```
 
 ---
 
-## 🧪 TEST
+## 🧪 Test Accounts
 
-Tài khoản mẫu trong sample-data:
+Tài khoản mẫu (password: `password123`):
 
-```javascript
-// Teacher
-email: teacher1@university.edu.vn
-// Student  
-email: student1@student.edu.vn
-
-// Password cần tạo qua /api/auth/register
-// vì chưa có trong sample data (cần hash bcrypt)
+**Teacher:**
+```
+teacher1@university.edu.vn
+teacher2@university.edu.vn
 ```
 
-### Test flow:
+**Student:**
+```
+student1@student.edu.vn
+student2@student.edu.vn
+student3@student.edu.vn
+```
 
-1. **Đăng ký** tài khoản teacher và student mới
-2. **Giảng viên** upload tài liệu vào môn
-3. **Sinh viên** đăng ký môn học
-4. **Sinh viên** xem và tải tài liệu (unlimited!)
+**Admin:**
+```
+admin@university.edu.vn
+```
 
 ---
 
-## ⚠️ LƯU Ý QUAN TRỌNG
+## 🔧 Tech Stack
 
-### Password Storage
-Schema hiện tại **KHÔNG có cột password_hash** trong bảng `profiles` (để đơn giản).
+**Backend:**
+- Node.js + Express + TypeScript
+- MySQL2
+- JWT Authentication
+- Multer (file upload)
+- PDFKit (TXT to PDF conversion)
 
-**Cách xử lý:**
-
-**Option 1 (Khuyến nghị):** Thêm cột password
-```sql
-ALTER TABLE profiles ADD COLUMN password_hash VARCHAR(255);
-```
-
-**Option 2:** Tạo bảng credentials riêng
-```sql
-CREATE TABLE credentials (
-  user_id VARCHAR(36) PRIMARY KEY,
-  password_hash VARCHAR(255) NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE
-);
-```
-
-**Option 3 (Dev only):** Tạm bỏ qua password check trong `auth-ultra-simple.ts`
+**Frontend:**
+- React 18 + TypeScript
+- Vite
+- TailwindCSS + shadcn/ui
+- React Router
+- Axios
+- PDFTron WebViewer
 
 ---
 
-## 📝 TO-DO (Nếu muốn hoàn thiện)
+## 🚦 Running in Production
 
-- [ ] Thêm column `password_hash` vào `profiles`
-- [ ] Hoàn thiện auth login với bcrypt
-- [ ] Setup file upload (Multer + Local storage hoặc S3)
-- [ ] Thêm preview PDF/PPTX
-- [ ] Frontend pages: Auth, Upload, Documents List
+### Environment Variables
+
+```env
+NODE_ENV=production
+PORT=3000
+DB_HOST=your-db-host
+DB_USER=your-db-user
+DB_PASSWORD=your-db-password
+DB_NAME=studocu
+JWT_SECRET=strong-secret-key
+```
+
+### Security Notes
+
+⚠️ **IMPORTANT:**
+- Passwords are stored as **plain text** in current version
+- For production, implement `bcrypt` hashing
+- Update CORS settings in `server/src/index.ts`
+- Use strong JWT_SECRET
+
+### Build Commands
+
+```bash
+# Frontend
+npm run build
+
+# Backend
+cd server
+npm run build
+```
 
 ---
 
-## 🎉 KẾT LUẬN
+## 📝 Features Checklist
 
-Đây là phiên bản **SIÊU ĐƠN GIẢN NHẤT** có thể:
-
-```
-Teacher → Upload
-Student → Download (Unlimited)
-```
-
-**Không có gì phức tạp hơn!**
+- [x] User authentication (JWT)
+- [x] Document upload (teacher only)
+- [x] Document list with search
+- [x] Document preview (multiple formats)
+- [x] Download tracking
+- [x] Delete documents (owner only)
+- [x] Duplicate title prevention
+- [x] System stats
 
 ---
 
-**Bắt đầu từ file:** `schema-simple.sql`
-**Chạy server:** `index-ultra-simple.ts`
-**Routes:** `*-ultra-simple.ts`
+## 🤝 Contributing
 
-Good luck! 🚀
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing`)
+5. Open Pull Request
+
+---
+
+## 📄 License
+
+MIT License - feel free to use for educational purposes
+
+---
+
+## 🆘 Support
+
+For issues and questions:
+- Create GitHub Issue
+- Check API Documentation
+- Test with Postman collection
+
+---
+
+**Made with ❤️ for Education**
