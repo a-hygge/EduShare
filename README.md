@@ -261,11 +261,11 @@ JWT_SECRET=strong-secret-key
 
 ```bash
 # Frontend
-npm run build
+npm run dev
 
 # Backend
 cd server
-npm run build
+npm run dev
 ```
 
 ---
