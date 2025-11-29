@@ -88,10 +88,25 @@ GET /api/auth/me
   "id": "uuid",
   "email": "teacher@university.edu.vn",
   "full_name": "Nguyễn Văn A",
-  "role": "teacher",
-  "created_at": "2025-01-01T00:00:00.000Z"
+  "role": "teacher"
 }
 ```
+
+---
+
+### 1.4 Đăng xuất (Logout)
+```
+POST /api/auth/logout
+```
+
+**Response:**
+```json
+{
+  "message": "Đăng xuất thành công"
+}
+```
+
+**Lưu ý:** Endpoint này chỉ trả về message. Client cần tự xóa token khỏi localStorage/sessionStorage.
 
 ---
 
@@ -340,19 +355,74 @@ Content-Disposition: inline; filename="file.pdf"
 
 ### 5.1 Thống kê tổng quan hệ thống
 ```
-GET /api/stats
+GET /api/stats/system
 ```
 
 **Response:**
 ```json
 {
-  "total_users": 100,
-  "total_documents": 50,
-  "total_downloads": 500,
-  "total_teachers": 10,
-  "total_students": 90
+  "totalDocuments": 50,
+  "totalUsers": 100,
+  "totalTeachers": 10,
+  "totalDownloads": 500
 }
 ```
+
+---
+
+### 5.2 Thống kê giáo viên theo user ID
+```
+GET /api/stats/teacher/:userId
+```
+
+**Headers:** Authorization required
+
+**Response:**
+```json
+{
+  "totalDocuments": 15,
+  "totalDownloads": 250
+}
+```
+
+**Lưu ý:** Trả về tổng số tài liệu và lượt tải của giáo viên cụ thể.
+
+---
+
+### 5.3 Thống kê sinh viên theo user ID
+```
+GET /api/stats/student/:userId
+```
+
+**Headers:** Authorization required
+
+**Response:**
+```json
+{
+  "totalDownloads": 45
+}
+```
+
+**Lưu ý:** Trả về tổng số lượt tải của sinh viên cụ thể.
+
+---
+
+## 6. Health Check API
+
+### 6.1 Health check
+```
+GET /health
+```
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-01-01T00:00:00.000Z"
+}
+```
+
+**Lưu ý:** Endpoint này không cần authentication, dùng để kiểm tra server có hoạt động hay không.
 
 ---
 
@@ -398,95 +468,6 @@ GET /api/stats
 {
   "error": "Internal server error"
 }
-```
-
----
-
-## Example Frontend Integration
-
-### Setup Axios
-```typescript
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
-
-// Add auth token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export default api;
-```
-
-### Login Example
-```typescript
-const handleLogin = async (email: string, password: string) => {
-  try {
-    const response = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', response.data.token);
-    return response.data.user;
-  } catch (error) {
-    console.error('Login failed:', error);
-  }
-};
-```
-
-### Upload Document Example
-```typescript
-const handleUpload = async (file: File, title: string, description: string) => {
-  try {
-    // Step 1: Upload file
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const uploadRes = await fetch('http://localhost:3000/api/uploads/upload', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-    
-    const uploadData = await uploadRes.json();
-    
-    // Step 2: Create document
-    await api.post('/documents', {
-      title,
-      description,
-      file_path: uploadData.file.path,
-      file_type: uploadData.file.mimetype,
-    });
-    
-    console.log('Upload successful!');
-  } catch (error) {
-    console.error('Upload failed:', error);
-  }
-};
-```
-
-### Download Example
-```typescript
-const handleDownload = async (documentId: string, filePath: string) => {
-  try {
-    // Track download
-    await api.post(`/documents/${documentId}/download`);
-    
-    // Download file
-    const fileUrl = `http://localhost:3000${filePath}`;
-    window.location.href = fileUrl;
-  } catch (error) {
-    console.error('Download failed:', error);
-  }
-};
 ```
 
 ---
