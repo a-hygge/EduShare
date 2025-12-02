@@ -9,12 +9,10 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// Configure multer for file upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, '../../uploads');
     
-    // Create uploads directory if it doesn't exist
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -22,7 +20,6 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // Generate unique filename
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const ext = path.extname(file.originalname);
     const nameWithoutExt = path.basename(file.originalname, ext);
@@ -33,11 +30,10 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB max (tăng lên cho video)
+    fileSize: 100 * 1024 * 1024, 
   },
   fileFilter: (req, file, cb) => {
-    // Allowed extensions
-    const allowedExtensions = /\.(pdf|doc|docx|ppt|pptx|txt|zip|rar|xls|xlsx|csv|mp4|avi|mov|wmv|flv|mkv|mp3|wav|aac|flac|ogg|wma)$/i;
+    const allowedExtensions = /\.(pdf|doc|docx|ppt|pptx|txt|zip|rar|xls|xlsx|csv|mp4|avi|mov|wmv|flv|mkv|mp3|wav|aac|flac|ogg|wma|ipynb)$/i;
     const extname = allowedExtensions.test(file.originalname.toLowerCase());
     
     const allowedMimetypes = [
@@ -64,7 +60,9 @@ const upload = multer({
       'audio/aac',
       'audio/flac',
       'audio/ogg',
-      'audio/x-ms-wma'
+      'audio/x-ms-wma',
+      'application/x-ipynb+json',
+      'application/json'
     ];
     
     const mimetypeAllowed = allowedMimetypes.includes(file.mimetype);
@@ -72,7 +70,7 @@ const upload = multer({
     if (extname || mimetypeAllowed) {
       return cb(null, true);
     } else {
-      cb(new Error('Chỉ cho phép upload file: PDF, DOC, DOCX, PPT, PPTX, TXT, ZIP, RAR, XLS, XLSX, CSV, MP4, AVI, MOV, WMV, FLV, MKV, MP3, WAV, AAC, FLAC, OGG, WMA'));
+      cb(new Error('Chỉ cho phép upload file: PDF, DOC, DOCX, PPT, PPTX, TXT, ZIP, RAR, XLS, XLSX, CSV, MP4, AVI, MOV, WMV, FLV, MKV, MP3, WAV, AAC, FLAC, OGG, WMA, IPYNB'));
     }
   }
 });
